@@ -2,4 +2,15 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* This file is for your main application CSS */
+* {
+  margin: 0;
+  padding: 0;
+  font-family: 'Courier New', Courier, monospace;
+  color: whitesmoke;
+  width: 100%;
+  background-color: rgb(2 6 23 / var(--tw-bg-opacity, 1));
+}
+
+.divider {
+  @apply w-full h-[1px] bg-slate-500
+}

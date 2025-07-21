@@ -17,7 +17,8 @@ defmodule AmazingChatWeb.Router do
   scope "/", AmazingChatWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", ChatListLive
+    live "/:room", ChatLive
   end
 
   # Other scopes may use custom stacks.
