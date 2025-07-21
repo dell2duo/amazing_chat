@@ -1,5 +1,4 @@
 defmodule AmazingChatWeb.ChatLive do
-  require Logger
   alias Ecto.UUID
   use AmazingChatWeb, :live_view
 
@@ -8,13 +7,16 @@ defmodule AmazingChatWeb.ChatLive do
 
     AmazingChatWeb.Endpoint.subscribe(topic)
 
-    {:ok,
-     assign(socket,
-       topic: topic,
-       room_name: room,
-       form: to_form(%{"message" => ""}),
-       messages: [%{sender: "system", id: UUID.generate(), content: "first message"}]
-     )}
+    socket =
+      socket
+      |> stream(:messages, [%{sender: "system", id: UUID.generate(), content: "first message"}],
+        at: 1
+      )
+      |> assign(:topic, topic)
+      |> assign(:room_name, room)
+      |> assign(:form, to_form(%{"message" => ""}))
+
+    {:ok, socket}
   end
 
   def handle_event("send_message", %{"message" => message}, socket) do
@@ -34,20 +36,20 @@ defmodule AmazingChatWeb.ChatLive do
   end
 
   def handle_info(%{topic: _topic, event: "new_message", payload: %{message: message}}, socket) do
-    Logger.info(message: message)
-    {:noreply, assign(socket, messages: socket.assigns.messages ++ [message])}
+    {:noreply, stream_insert(socket, :messages, message)}
   end
 
   def render(assigns) do
     ~H"""
     <div class="flex flex-col items-center justify-between p-4 h-full w-full border">
-      <div id="messages">
-        <p :for={message <- @messages} id={to_string(message.id)}>
+      <div id="messages" phx-update="stream">
+        <p :for={{dom_id, message} <- @streams.messages} id={dom_id}>
           {message.sender}: {message.content}
         </p>
       </div>
+
       <.form for={@form} phx-submit="send_message">
-        <.input field={@form[:message]} />
+        <.input field={@form[:message]} required />
       </.form>
     </div>
     """
